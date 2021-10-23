@@ -21,7 +21,7 @@ const router = express.Router();
  *         - application/json
  *      responses:
  *          200:
- *              description: todos los usurios del sistema
+ *              description: Todos los usuarios del sistema
  *              content:
  *                  application/json:   
  *                      schema:
@@ -41,11 +41,11 @@ router.get('/users', auth.authToken, auth.authRole, async (req, res)=> {
 
 /**
  * @swagger
- * /user/{id}:
+ * /user/:id:
  *  get:
  *      tags:
  *      - Users
- *      description: Trae todos los usuarios del sistema
+ *      description: Trae un usuario del sistema
  *      parameters:
  *         - in: header
  *           name: token
@@ -61,7 +61,7 @@ router.get('/users', auth.authToken, auth.authRole, async (req, res)=> {
  *         - application/json
  *      responses:
  *          200:
- *              description: todos los usurios del sistema
+ *              description: Un usuario del sistema
  *              content:
  *                  application/json:   
  *                      schema:
@@ -88,15 +88,15 @@ router.get('/user/:id', auth.authToken, auth.authRole, async (req, res)=> {
  *  post:
  *      tags:
  *      - Users
- *      description: Ingresa usuarios del sistema
+ *      description: Ingresar un usuario al sistema
  *      parameters:
  *         - in: header
- *           name: token
+ *           name: authorization
  *           description: Identificador unico del usuario
  *           schema:
  *             type: string
  *         - in: body
- *           description: informaicon del usuario del usuario
+ *           description: Informacion del usuario a registrar
  *           schema:
  *             $ref: "#/components/schemas/User"
  *      produces:
@@ -114,7 +114,8 @@ router.post('/user', auth.authUser, async (req, res)=> {
     user.idRole = 2;
     let result;
     user.username = user.username.toLowerCase();
-    result = await actions.Insert(`INSERT INTO users (nombreUsuario, nombreCompleto, email, telefono, direccion, contrasena, idRole) 
+    result = await actions.Insert(`INSERT INTO users (nombreUsuario, nombreCompleto, email, 
+    telefono, direccion, contrasena, idRole) 
     VALUES (:username, :nombreCompleto, :email, :telefono, :direccion, :contrasena, :idRole)`, user);
     if(result.error) {
         res.status(500).json(result.message);
@@ -129,15 +130,15 @@ router.post('/user', auth.authUser, async (req, res)=> {
  *  put:
  *      tags:
  *      - Users
- *      description: Actualiza usuarios del sistema
+ *      description: Actualiza un usuario del sistema
  *      parameters:
  *         - in: header
- *           name: token
+ *           name: authorization
  *           description: Identificador unico del usuario
  *           schema:
  *             type: string
  *         - in: body
- *           description: informaicion del usuario del usuario
+ *           description: Informacion del usuario a actualizar
  *           schema:
  *             $ref: "#/components/schemas/User"
  *      produces:
@@ -150,8 +151,23 @@ router.post('/user', auth.authUser, async (req, res)=> {
  *                      schema:
  *                           $ref: "#/components/schemas/User"
  */
-router.put('/user/:id', auth.authToken, async (req, res)=> {
-    //Code here
+router.put('/user/:id', auth.authToken, auth.authRole, async (req, res)=> {
+    const user = req.body;
+    console.log("El rol es: ",user);
+    const id = req.params.id;
+    console.log("El id es: ",id);
+    if (req.roleAdmin) {
+        const result = await actions.Update(`UPDATE users 
+        SET nombreUsuario = :nombreUsuario, nombreCompleto = :nombreCompleto, 
+        email = :email, telefono = :telefono, direccion = :direccion, idRole = :idRole 
+        WHERE idusers = :id`, { id, ...user});    
+        res.json(result);
+    }else{
+        res.json({
+            error: 'El usuario no tiene privilegios suficientes para modificar usuarios',
+            codeError: 01
+        }); 
+    }
 });
 
 /**
@@ -160,15 +176,15 @@ router.put('/user/:id', auth.authToken, async (req, res)=> {
  *  patch:
  *      tags:
  *      - Users
- *      description: Actualiza usuarios del sistema
+ *      description: Actualiza un usuario del sistema
  *      parameters:
  *         - in: header
- *           name: token
+ *           name: authorization
  *           description: Identificador unico del usuario
  *           schema:
  *             type: string
  *         - in: body
- *           description: informaicion del usuario del usuario
+ *           description: Informacion del usuario a actualizar
  *           schema:
  *             $ref: "#/components/schemas/User"
  *      produces:
@@ -182,14 +198,16 @@ router.put('/user/:id', auth.authToken, async (req, res)=> {
  *                           $ref: "#/components/schemas/User"
  */
 router.patch('/user/:id', auth.authToken, auth.authRole, async (req, res)=> {
-    const user = req.body;
+    const user = req.body.idRole;
+    console.log("El rol que se quiere poner al usuario es: ",user);
     const id = req.params.id;
+    console.log("El id del usuario a modificar es: ",id);
     if (req.roleAdmin) {
-        const result = await actions.Update(`UPDATE users SET email = :email WHERE id = :id`, user);
+        const result = await actions.Update(`UPDATE users SET idRole = :idRole WHERE idusers = :id`, {idRole: user, id});
         res.json(result);
-    } else {
+    }else{
         res.json({
-            error: 'El usuario no tiene privilegios suficientes para eliminar usuarios',
+            error: 'El usuario no tiene privilegios suficientes para modificar usuarios',
             codeError: 01
         }); 
     }
@@ -201,10 +219,10 @@ router.patch('/user/:id', auth.authToken, auth.authRole, async (req, res)=> {
  *  delete:
  *      tags:
  *      - Users
- *      description: Elimina usuarios del sistema
+ *      description: Elimina un usuario del sistema
  *      parameters:
  *         - in: header
- *           name: token
+ *           name: authorization
  *           description: Identificador unico del usuario
  *           schema:
  *             type: string
@@ -242,35 +260,35 @@ module.exports = router;
  *        properties:  
  *          id: 
  *              type: integer
- *              description: id del usuario
+ *              description: Id del usuario
  *              example: 1  
- *          nombreUsuaurio: 
+ *          nombreUsuario: 
  *              type: string
- *              description: nombre del usuario
- *              example: 'Wvanegas'
+ *              description: Nombre del usuario
+ *              example: 'Jrendon'
  *          nombreCompleto: 
  *              type: string
- *              description: nombre completo del usuario
- *              example: 'Walter vanegas'
+ *              description: Nombre completo del usuario
+ *              example: 'Juan Rendon'
  *          email: 
  *              type: string
  *              description: email del usuario
- *              example: 'Waltervanegas@gmail.com'
+ *              example: 'email@gmail.com'
  *          telefono: 
  *              type: string
- *              description: telefono del usuario
- *              example: '3007002250'
+ *              description: Telefono del usuario
+ *              example: '3006002050'
  *          direccion: 
  *              type: string
- *              description: direccion del usuario
+ *              description: Direccion del usuario
  *              example: 'N/A'
  *          contrasena: 
  *              type: string
- *              description: contraseña del usuario
+ *              description: Contraseña del usuario
  *              example: '1234'
  *          idRole: 
  *              type: integer
- *              description: rol del usuario
+ *              description: Rol del usuario
  *              example: '2'
  * 
 */

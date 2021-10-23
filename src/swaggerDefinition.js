@@ -1,9 +1,9 @@
 module.exports.swaggerDefinition = {
     openapi: '3.0.0',
     info: {
-        title: 'Deliah Resto API',
+        title: 'Delilah Resto API',
         version: '1.0.0',
-        description: 'Esta es una documentacion escrita para el proyecto deliah resto tiene todos los endpoints de la API',
+        description: 'Esta es la documentacion escrita para el proyecto Delilah Resto, contiene todos los endpoints de la API',
         license: {
             name: 'MIT',
             url: ''
@@ -15,7 +15,7 @@ module.exports.swaggerDefinition = {
             description: 'develop'
         },
         {
-            url: 'https://delahiaresto.com/',
+            url: 'https://delilahresto.com/',
             description: 'production'
         }
     ],

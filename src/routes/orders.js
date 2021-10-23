@@ -3,16 +3,96 @@ const router = express.Router();
 const auth = require('../security/auth');
 const actions = require('../database/actions');
 
+/**
+ * @swagger
+ * /orders:
+ *  get:
+ *      tags:
+ *      - Orders
+ *      description: Trae todas las ordenes del sistema
+ *      parameters:
+ *         - in: header
+ *           name: authorization
+ *           description: Identificador unico del usuario
+ *           schema:
+ *             type: string
+ *      produces:
+ *         - application/json
+ *      responses:
+ *          200:
+ *              description: Todas las ordenes del sistema
+ *              content:
+ *                  application/json:   
+ *                      schema:
+ *                          type: "array"
+ *                          items:
+ *                              $ref: "#/components/schemas/Order"
+ */
 router.get('/orders', async (req, res)=> {
     let result = await actions.Select('SELECT * FROM orders', {});
     res.json(result);
 });
 
+/**
+ * @swagger
+ * /order/:id:
+ *  get:
+ *      tags:
+ *      - Orders
+ *      description: Trae una orden del sistema
+ *      parameters:
+ *         - in: header
+ *           name: authorization
+ *           description: Identificador unico del usuario
+ *           schema:
+ *             type: string
+ *         - in: path
+ *           name: id
+ *           description: Identificador unico de la orden
+ *           schema:
+ *             type: string
+ *      produces:
+ *         - application/json
+ *      responses:
+ *          200:
+ *              description: Una sola orden del sistema
+ *              content:
+ *                  application/json:   
+ *                      schema:
+ *                           $ref: "#/components/schemas/Order"
+ */
 router.get('/order/:id', async (req, res)=> {
     const result = await actions.Select('SELECT * FROM orders WHERE id = :id', { id: req.params.id });
     res.json(result);
 });
 
+/**
+ * @swagger
+ * /order:
+ *  post:
+ *      tags:
+ *      - Orders
+ *      description: Ingresar una orden al sistema
+ *      parameters:
+ *         - in: header
+ *           name: authorization
+ *           description: Identificador unico del usuario
+ *           schema:
+ *             type: string
+ *         - in: body
+ *           description: Informacion de la orden a registrar
+ *           schema:
+ *             $ref: "#/components/schemas/Order"
+ *      produces:
+ *         - application/json
+ *      responses:
+ *          200:
+ *              description: Orden creada
+ *              content:
+ *                  application/json:   
+ *                      schema:
+ *                           $ref: "#/components/schemas/Order"
+ */
 router.post('/order', async (req, res)=> {
     const reqComplete = req.body
 
@@ -58,6 +138,33 @@ router.post('/order', async (req, res)=> {
     }    
 });
 
+/**
+ * @swagger
+ * /order/:id:
+ *  put:
+ *      tags:
+ *      - Orders
+ *      description: Actualiza una orden del sistema
+ *      parameters:
+ *         - in: header
+ *           name: authorization
+ *           description: Identificador unico del usuario
+ *           schema:
+ *             type: string
+ *         - in: body
+ *           description: Informacion de la orden a actualizar
+ *           schema:
+ *             $ref: "#/components/schemas/Order"
+ *      produces:
+ *         - application/json
+ *      responses:
+ *          200:
+ *              description: Orden actualizada
+ *              content:
+ *                  application/json:   
+ *                      schema:
+ *                           $ref: "#/components/schemas/Order"
+ */
 router.put('/order/:id', auth.authToken, auth.authRole, async (req, res)=> {
     const id = req.params.id;
     const order = req.body;
@@ -72,6 +179,72 @@ router.put('/order/:id', auth.authToken, auth.authRole, async (req, res)=> {
     }
 });
 
+/**
+ * @swagger
+ * /order/:id:
+ *  patch:
+ *      tags:
+ *      - Orders
+ *      description: Actualizar una orden del sistema
+ *      parameters:
+ *         - in: header
+ *           name: authorization
+ *           description: Identificador unico del usuario
+ *           schema:
+ *             type: string
+ *         - in: body
+ *           description: Informacion de la orden a actualizar
+ *           schema:
+ *             $ref: "#/components/schemas/User"
+ *      produces:
+ *         - application/json
+ *      responses:
+ *          200:
+ *              description: Orden actualizada
+ *              content:
+ *                  application/json:   
+ *                      schema:
+ *                           $ref: "#/components/schemas/Order"
+ */
+ router.patch('/order/:id', auth.authToken, auth.authRole, async (req, res)=> {
+    const order = req.body.estado;
+    console.log("El estado que se quiere poner a la orden es: ",order);
+    const id = req.params.id;
+    console.log("El id de la orden a modificar es: ",id);
+    if (req.roleAdmin) {
+        const result = await actions.Update(`UPDATE orders SET estado = :estado WHERE idOrders = :id`, {estado: order, id});
+        res.json(result);
+    }else{
+        res.json({
+            error: 'El usuario no tiene privilegios suficientes para modificar ordenes',
+            codeError: 01
+        }); 
+    }
+});
+
+/**
+ * @swagger
+ * /order/:id:
+ *  delete:
+ *      tags:
+ *      - Orders
+ *      description: Elimina una orden del sistema
+ *      parameters:
+ *         - in: header
+ *           name: authorization
+ *           description: Identificador unico del usuario
+ *           schema:
+ *             type: string
+ *      produces:
+ *         - application/json
+ *      responses:
+ *          200:
+ *              description: Orden eliminada
+ *              content:
+ *                  application/json:   
+ *                      schema:
+ *                           $ref: "#/components/schemas/Order"
+ */
 router.delete('/order/:id', auth.authToken, auth.authRole, async (req, res)=> {
     const id = req.params.id;
     await actions.Delete(`DELETE FROM orders WHERE idOrders = :id`,{id});
@@ -87,37 +260,32 @@ module.exports = router;
  *      Order:
  *        type: object
  *        properties:  
- *          id: 
+ *          idOrders: 
  *              type: integer
- *              description: id del usuario
+ *              description: Id de la orden
  *              example: 1  
- *          nombreUsuaurio: 
+ *          nombre: 
  *              type: string
- *              description: nombre del usuario
- *              example: 'Wvanegas'
- *          nombreCompleto: 
+ *              description: Nombre de la orden
+ *              example: '4xHamburguesa,2xEnsalada Cesar,3xSandwich'
+ *          hora: 
  *              type: string
- *              description: nombre completo del usuario
- *              example: 'Walter vanegas'
- *          email: 
- *              type: string
- *              description: email del usuario
- *              example: 'Waltervanegas@gmail.com'
- *          telefono: 
- *              type: string
- *              description: telefono del usuario
- *              example: '3007002250'
- *          direccion: 
- *              type: string
- *              description: direccion del usuario
- *              example: 'N/A'
- *          contrasena: 
- *              type: string
- *              description: contraseña del usuario
- *              example: '1234'
- *          idRole: 
+ *              description: Hora de la orden
+ *              example: '07:05:00'
+ *          total: 
+ *              type: number
+ *              description: Total de la orden
+ *              example: '20000'
+ *          tipoPago: 
  *              type: integer
- *              description: rol del usuario
+ *              description: Tipo de pago de la orden
+ *              example: '1'
+ *          idUser: 
+ *              type: integer
+ *              description: Id del usuario
  *              example: '2'
- * 
+ *          estado: 
+ *              type: integer
+ *              description: Estado de la orden
+ *              example: '1'
 */

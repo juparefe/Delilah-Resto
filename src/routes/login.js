@@ -4,6 +4,28 @@ const actions = require('../database/actions');
 
 const router = express.Router();
 
+/**
+ * @swagger
+ * /login:
+ *  post:
+ *      tags:
+ *      - Login
+ *      description: Ingresar como usuario al sistema
+ *      parameters:
+ *         - in: body
+ *           description: Nombre de usuario y contraseña a ingresar
+ *           schema:
+ *             $ref: "#/components/schemas/Login"
+ *      produces:
+ *         - application/json
+ *      responses:
+ *          200:
+ *              description: El usuario ha ingresado correctamente
+ *              content:
+ *                  application/json:   
+ *                      schema:
+ *                           $ref: "#/components/schemas/Login"
+ */
 router.post('/login', async (req, res)=> {
     const params = req.body;
     const user = {
@@ -28,3 +50,20 @@ router.post('/login', async (req, res)=> {
 });
 
 module.exports = router;
+
+/**
+ * @swagger
+ * components:
+ *   schemas:
+ *      Login:
+ *        type: object
+ *        properties:  
+ *          nombreUsuario: 
+ *              type: string
+ *              description: Nombre del usuario
+ *              example: 'Jrendon'
+ *          contrasena: 
+ *              type: string
+ *              description: Contraseña del usuario
+ *              example: '1234'
+*/
