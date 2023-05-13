@@ -1,4 +1,10 @@
 # Delilah Resto API
+Desarrollo de una API que controla el sistema de pedidos online para un restaurante utilizando el lenguaje JavaScript, haciendo uso del entorno de ejecución Node.js, el framework Express.js y un sistema de bases de datos relacionales con SQL. Desarrollando funcionalidades que permitan realizar altas, bajas, modificaciones y obtención de información sobre una estructura de datos que podría consumir un cliente.
+
+**Lenguajes utilizados:** JavaScript y SQL
+**Frameworks o librerias utilizados:** Express.js
+
+
 ## Pasos para ejecucion
 ### Clonar el repositorio de Github con el proyecto:
 - El codigo del proyecto se encuentra alojado en Github 
